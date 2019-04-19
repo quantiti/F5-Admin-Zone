@@ -1,0 +1,18 @@
+when HTTP_RESPONSE {
+  #LB::detach
+  if { [HTTP::cookie exists "COOKIENAME"] } {
+    #log local0. "Found cookie [HTTP::cookie "COOKIENAME"] from server [IP::server_addr]:[TCP::server_port] all header [HTTP::header "Set-Cookie"] "
+	persist add uie "[HTTP::cookie "COOKIENAME"]" 3600
+  }
+}
+when HTTP_REQUEST {
+	LB::detach
+	if { [HTTP::cookie exists "COOKIENAME"] } {
+		if { [persist lookup uie [HTTP::cookie "COOKIENAME"] ] != "" } {
+			persist uie "[HTTP::cookie "COOKIENAME"]"
+		}	
+  }
+}
+when LB_SELECTED {
+	#log local0. "sending request [HTTP::cookie "COOKIENAME"] to server [LB::server]"
+}
